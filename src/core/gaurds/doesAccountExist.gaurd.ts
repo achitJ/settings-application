@@ -53,6 +53,11 @@ export class DoesAccountIdExist implements CanActivate {
         if (!userExist) {
             throw new NotFoundException('This account id doesn\'t exist');
         }
+
+        if(userExist.id !== request.user.account_id) {
+            throw new ForbiddenException('You are not authorized to perform the operation');
+        }
+
         return true;
     }
 }

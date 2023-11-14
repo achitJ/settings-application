@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, NotFoundException, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 import { Setting as SettingEntity } from '../entities/setting.entity';
 import { SettingService } from 'src/services/setting.service';
@@ -17,25 +18,27 @@ export class SettingController {
         return await this.settingService.findAll();
     }
 
-    @UseGuards(DoesAccountIdExist)
+    @UseGuards(AuthGuard('jwt'), DoesAccountIdExist)
     @Get(':account_id')
-    async findOneByAccount(@Param('account_id') account_id: number): Promise<SettingEntity[]> {
+    async findOneByAccount(
+        @Param('account_id', ParseIntPipe) account_id: number
+    ): Promise<SettingEntity[]> {
         return await this.settingService.findAllByAccount(account_id);
     }
 
-    @UseGuards(DoesAccountIdExist, DoesSettingNameExist)
+    @UseGuards(AuthGuard('jwt'), DoesAccountIdExist, DoesSettingNameExist)
     @Post()
     async create(@Body() setting: CreateSettingDto, @Request() req): Promise<SettingEntity> {
         return await this.settingService.create(setting);
     }
 
-    @UseGuards(DoesAccountIdExist)
+    @UseGuards(AuthGuard('jwt'), DoesAccountIdExist)
     @Patch()
     async updateOneByAccountAndName(@Body() setting: UpdateSettingDto, @Request() req): Promise<SettingEntity> {
         return await this.settingService.updateOneByAccountAndName(setting);
     }
 
-    @UseGuards(DoesAccountIdExist, CanSettingBeDeleted)
+    @UseGuards(AuthGuard('jwt'), DoesAccountIdExist, CanSettingBeDeleted)
     @Delete()
     async deleteOneByAccountAndName(@Body() setting: DeleteSettingDto, @Request() req): Promise<SettingEntity> {
         return await this.settingService.deleteOneByAccountAndName(setting);
